@@ -1,0 +1,224 @@
+---
+title: "Homework 3 Last try"
+author: "Sanduni Talagala"
+date: "February 4, 2020"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+setwd("/Users/owner1/Desktop/bi612/Homework 3/Homework 3 Last try")
+```
+
+## R Markdown
+
+**Question 1: enter data**
+```{r}
+LakeSData = read.csv("Killarney.csv")
+```
+
+**Question 2: Boxplot and interpret**
+```{r}
+boxplot(LakeSData$Diversity~LakeSData$status,main="Species diversity by lake status",ylab='Species Diversity',xlab='Lake Status',col=
+c('red','blue','green'))
+```
+
+First, the median lines of the 3 boxes do not overlap so there could to be a difference. Howeverm the median for red (acidic) seems to be far from the other ones, whereas the medians for blue and green (neutral and recovered) seems close. This suggests that if there is a significant difference it is mostly likely in acidic condition. Looking at the boxes themselves, blue-green (neutral-recovered) overlap while red-blue(acidic-neutral) and red-green(acidic-recovered) do not, which again suggests that if there is a difference it will probably be between red-blue and red-green. *Therefore, by looking at boxplots it seems that acidic is different from neutral and recovered while neutral and recovered do not seem different (however, a test is necessary to be sure as the whiskers overlap).*
+
+**Question 3: Run Anova and display**
+Here I'm not checking assuptions before running the test because that is the last question of this section. 
+```{r}
+Anova1=aov(LakeSData$Diversity~LakeSData$status)
+Anova1
+
+outputAnova = summary(Anova1)
+outputAnova
+```
+
+**Question 4: Null hypothesis** 
+H0 = Mean species diversity is not significantly different between the 3 lake statuses (acidic, neutral, recovered).
+
+**Question 5: Oberved test statistic & p value**
+observed test statistic is 16.41 and the p value is 5.43e-06. 
+
+**Question 6: Did they differ?**
+Yes. The p-value is below 0.05 which means there is some significant difference amoung lake statuses as determined by the omnibus test.
+
+**Question 7: Tukey test and display**
+```{r}
+Tukeyy = TukeyHSD(aov(LakeSData$Diversity~LakeSData$status))
+Tukeyy
+```
+
+**Question 8: which groups differ**
+As expected, the significant difference seen in the One-Way Anova seem to be within Neutral-Acidic and Recovered-acidic. So the mean diversity in acidic lakes seem to differ from the mean diversities in both neutral and recovered lakes. Whereas recorverd lakes mean diversity does not significantly differ from neutral lake'.   
+
+**Question 9: Do the assumptions work?: shapiro (residuals) + levene's**
+The assumptions for homogeneous variances stands (because the p value in levene's test is greater than 0.05 as seen below), but the assumption for normality in residuals is violated as shown below (the p value in shapiro test is less than 0.05). So the dataset does not meet all the assuptions for this test and needs to be transformed. 
+
+Please note: my computer version does not support car package so I got it seperately and hope it worked.
+```{r}
+library(car)
+homogenous <- leveneTest(LakeSData$Diversity,LakeSData$status)
+homogenous
+
+Residuals1 = Anova1$residuals
+normality1 <-shapiro.test(Residuals1)
+normality1
+```
+
+
+-----------------------------------------------------------------------------
+
+**Question 10: 2factor anova: tobacco + alcohol**
+
+a) 2factor anova + display output
+```{r}
+Cancer = read.csv("esoph.csv")
+alcohol = Cancer$Alcohol
+tobacco = Cancer$Tobacco
+age = Cancer$Age
+cases = Cancer$ncases
+
+anovaCancer <- aov(cases~tobacco*alcohol)
+summary(anovaCancer)
+```
+
+b) conclusion
+According to this output when we look at tobacco and alcohol as the two factors, alcohol did not have an influence on esophageal cancer since the p value is greater than 0.05. Similarly, tobacco had no significant influence on esophageal cancer since the p value is greater than 0.05. There is no significant interaction between alcohol and tobacco either on esophageal cancer (since p value is greater than 0.05). Overall, the main effects or the interactions do not significantly effect the cancer cases. 
+
+**Question 11: 2factor anova: tobacco + age**
+
+a) anova table
+```{r}
+anovaCancer2 <- aov(cases~tobacco*age)
+summary(anovaCancer2)
+```
+
+b) tukey test 
+```{r}
+Tukeyyy = TukeyHSD(anovaCancer2)
+Tukeyyy
+```
+c) conclusion
+  When we use tobacco and age as factors (in this specific order of testing), the main effects of tobacco and main effects of age seems to have an influence on esophageal cancer (but no interactions), so we look at main effects in tukey test. 
+  There's a significant difference in cancer cases between people that take 30+ - 0-9g of tobacco/day. The people that take the lowest dose(if any) of tobacco a day seems to report esophageal cancer occurances significantly less than the people that take over 30g of tobacco a day (so it makes a difference at extremes). This makes sense, people taking none or least tobacco a day report significantly less cancer cases than people that take the max dose.  
+  The 3 age categories within 45 to 74 years seem to have significantly more cases of cancer than both the 25-34 group and 35-44 group. In contrast, people over 75 years report significantly less cases of the cancer compared to the two age groups within 55 to 74. 
+
+**Question 12: 2factor anova: age + alcohol**
+a) anova table
+```{r}
+anovaCancer3 <- aov(cases~age*alcohol , data=Cancer)
+summary(anovaCancer3)
+```
+
+b) interaction plot
+```{r}
+interaction.plot(age,alcohol,cases, legend=T, main = "Interaction plot of age and alcohol on cancer cases" ) 
+
+tukeyyyy = TukeyHSD(anovaCancer3)
+tukeyyyy
+```
+
+c) explain
+  The anova output shows significant main effects of age and alcohol and a signifiant interaction. Since there is an interaction, we focus on that (because the relationship is more complicated than just main effects). 
+  At age 25-35 and 75+ the amount of alcohol consumed does not seem to influence the reported cases of cancer. Around 65-74, people that take 40-79 alcohol seem to report way more cancer than people that drink the most (80-119) alcohol (according to the ineraction plot). Around the middle age ranges, there's more cancer cases if you have more alchol and less cancer cases if you have less alcohol (except for 40-79 alcohol a day as mentioned above). Overall, cases depend on an interaction between the alcohol amount and age. 
+
+---------------------------------------------------------------------------
+
+##PART TWO
+
+**Question: 13**
+a) Scatter plot, what it seems
+According to the scatter plot below, fuel mileage seem to depend on the weight of the vehicle where the lighter vehicles get high fuel efficiency and heavier vehicles get low fuel efficiency.
+```{r}
+plot(mtcars$wt,mtcars$mpg, xlab = 'weight of car (in 1000lb)', ylab = 'fuel mileage (in mpg)', main = 'Plot of fuel efficiency by weight in automobiles')
+```
+
+b) linear regression
+```{r}
+regression1 <- glm(mtcars$mpg~mtcars$wt)
+summary.lm(regression1)
+```
+
+c) blue line and equation
+*Regression equation : y = 37.2851 - 5.3445x*
+```{r}
+plot(mtcars$wt,mtcars$mpg, xlab = 'weight of car (in 1000lb)', ylab = 'fuel efficieny (in mpg)', xlim = c(0,6), ylim = c(0,40), main = 'Plot of fuel efficiency by weight in automobiles with regression line')
+
+abline(regression1, col = 'blue')
+```
+
+
+
+d) conclusions and p value: 
+According the output the p value is 1.294e-10 which is less than 0.05. Therefore, fuel mileage is significantly related to car weight. 
+
+**Question 14**
+a) Scatter plot
+Yes, the quater mile time seems to differ with the vehicle's horsepower. The cars with less hoursepower seems to have a higher quater mile time than cars with more horsepower.
+```{r}
+plot(mtcars$hp,mtcars$qsec, xlab = 'horesepower of cars', ylab = '1/4 mile time', main = 'Sactter plot of quater mile time and the horsepower of cars')
+```
+
+b) linear regression
+```{r}
+regression2 <- glm(mtcars$qsec~mtcars$hp)
+summary.lm(regression2)
+```
+
+c) blue line + equation 
+*equation: y = 20.556354 - 0.018458x*
+```{r}
+plot(mtcars$hp,mtcars$qsec, xlab = 'horesepower of cars', ylab = '1/4 mile time', xlim = c(0,400), ylim = c(0,25), main = 'Sactter plot of quater mile time and the horsepower of cars  + regression line')
+
+abline(regression2, col = 'blue')
+
+```
+
+
+d) 300hp car ----> 15.02 quater mile time
+```{r}
+qsec1 = 20.556354 - 0.018458*300
+qsec1
+```
+
+e) The question says "is gas mileage sig related to weight" which was answered in question 13 as yes. So I assume this question was meant to ask if quater mile time significantly related to horsepower? -> In this case yes they are significantly related as they have a p value of 5.766e-06 which is lower than 0.05. 
+
+f) gvlma - assumptions met for hp and qsec
+```{r}
+library(gvlma)
+gvlma(lm(regression2))
+```
+Since Global stat has a p value higher than 0.05, so we do have linearity. Skewness is fine and that my data does not seem skewed. Kurtosis being significant (slightly) means that my data is highly or narrowly peaked, so I could ideally transoform my data. Link function is fine. Heteroscedasticity is fine so my variances are similar across the range of x. Overall, since the global stat takes everything into account and that one is over 0.05 for p value, the assumptions aren't too violated and we can run the test (meets assumptions).
+
+**Question 15** 
+
+a) I found this built in package (in Stat2Data package) that has data on fruit flies. I want to see if the flies' activity correlate with their lifespan. Do flies that are more active live longer or the other way? Though it is a built in package, I downloaded it just so everything runs smoothly. 
+```{r}
+myFlies = read.csv("FruitFlies2.csv")
+```
+
+b) scatterplot
+```{r}
+plot(myFlies$Activity,myFlies$Lifespan, xlab = 'Activity of flies (number of movements detected by software)', ylab = 'lifesspan (in hours)', main = 'Sactter plot of fruit fly activity vs lifespan')
+```
+
+c) Correlation
+*Correlation cofficient as calculated below is: r= 0.5425864
+```{r}
+regression3 <- glm(myFlies$Lifespan~myFlies$Activity)
+summary.lm(regression3)
+
+corCoef <- sqrt(0.2944)
+corCoef
+```
+
+```{r}
+cor.test(myFlies$Activity,myFlies$Lifespan)
+```
+
+d) significant?
+Yes, the correlation is significant, suggesting that there is a positive correlation (significant) between the acitivity and the lifespan of fruit flies. I ran Pearson's product-moment correlation and the p value is < 2.2e-16. This output further confirms my correlation coefficient (0.5425645).
